@@ -719,7 +719,7 @@ def main(args: dpo_utils.ExperimentConfig, tc: TokenizerConfig):
         )
 
     # remove all checkpoints to save space
-    if accelerator.is_local_main_process:
+    if args.clean_checkpoints_at_end and accelerator.is_local_main_process:
         clean_last_n_checkpoints(args.output_dir, keep_last_n_checkpoints=0)
 
     if (

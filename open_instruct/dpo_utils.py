@@ -251,6 +251,8 @@ class CheckpointConfig:
     """Whether the various states should be saved at the end of every n steps, or 'epoch' for each epoch."""
     keep_last_n_checkpoints: int = 3
     """How many checkpoints to keep in the output directory. -1 for all."""
+    clean_checkpoints_at_end: bool = False
+    """Whether to clean up all previous checkpoints at the end of the run."""
     resume_from_checkpoint: str | None = None
     """If the training should continue from a checkpoint folder."""
 
