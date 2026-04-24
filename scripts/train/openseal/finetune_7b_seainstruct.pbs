@@ -4,8 +4,8 @@
 #PBS -k oed
 #PBS -N openseal_sft
 #PBS -q auto
-#PBS -l select=1:ngpus=2
-#PBS -l walltime=96:00:00
+#PBS -l select=1:ngpus=8
+#PBS -l walltime=48:00:00
 
 cd $PBS_O_WORKDIR
 
@@ -20,7 +20,6 @@ singularity exec -e \
 --env HF_HOME=/scratch/e1583535/cache \
 --env HF_DATASETS_CACHE=/scratch/e1583535/cache/datasets \
 --env TRITON_CACHE_DIR=/scratch/e1583535/cache/triton \
---env PYTHONDONTWRITEBYTECODE=1 \
 $image bash << EOF > $LOG_DIR/stdout.$PBS_JOBID.log 2> $LOG_DIR/stderr.$PBS_JOBID.log
 
 # Ensure the open_instruct package (one level up from the package dir) is on PYTHONPATH
@@ -45,12 +44,12 @@ export NCCL_DEBUG=INFO
 export TORCH_NCCL_BLOCKING_WAIT=1
 export NCCL_TIMEOUT=3600
 
-export CUDA_VISIBLE_DEVICES=0,1
+# export CUDA_VISIBLE_DEVICES=0,1,2,3,4,5,6,7
 
 accelerate launch \
     --mixed_precision bf16 \
     --multi_gpu \
-    --num_processes 2 \
+    --num_processes 8 \
     --num_machines 1 \
     --dynamo_backend no \
     /scratch/e1583535/open-instruct/open_instruct/finetune.py \
@@ -64,21 +63,20 @@ accelerate launch \
     --use_slow_tokenizer False \
     --chat_template_name olmo \
     --dataset_mixer_list \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Burmese 1.00 \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Filipino 1.00 \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Indonesian 1.00 \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Malay 1.00 \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Tamil 1.00 \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Thai 1.00 \
-        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-cleaned/Vietnamese 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Burmese 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Filipino 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Indonesian 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Malay 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Tamil 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Thai 1.00 \
+        /scratch/e1583535/data/aisingapore/SEA-Instruct-2602-renamed/Vietnamese 1.00 \
     --use_flash_attn \
-    --max_seq_length 4096 \
+    --max_seq_length 2048 \
     --per_device_train_batch_size 2 \
     --gradient_accumulation_steps 256 \
-    --learning_rate 7e-6 \
-    --final_lr_ratio 0.1 \
+    --learning_rate 1e-6 \
     --lr_scheduler_type linear \
-    --warmup_ratio 0.05 \
+    --warmup_ratio 0.1 \
     --weight_decay 0.0 \
     --num_train_epochs 1 \
     --logging_steps 50 \
@@ -94,8 +92,7 @@ accelerate launch \
     --report_to wandb \
     --wandb_project_name openseal-posttraining \
     --wandb_entity tsangb34-national-university-of-singapore-students-union \
-    --packing False 
-    # --gradient_checkpointing \
+    --packing True 
     
 echo "Training completed at $(date)"
 EOF
