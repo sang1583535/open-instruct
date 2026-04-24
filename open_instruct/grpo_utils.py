@@ -14,7 +14,14 @@ from open_instruct.utils import (
 )
 
 
-class GRPOLossType(enum.StrEnum):
+try:
+    _StrEnumBase = enum.StrEnum
+except AttributeError:
+    # Python < 3.11 compatibility
+    _StrEnumBase = str
+
+
+class GRPOLossType(_StrEnumBase, enum.Enum):
     dapo = "dapo"
     cispo = "cispo"
 

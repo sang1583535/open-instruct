@@ -5,9 +5,9 @@ This module provides classes for connecting to any MCP server and exposing its t
 """
 
 import asyncio
+import enum
 import time
 from dataclasses import dataclass, field, replace
-from enum import StrEnum
 from typing import Any, ClassVar
 
 from mcp import ClientSession
@@ -22,7 +22,14 @@ from open_instruct.tools.utils import BaseToolConfig, Tool, ToolOutput, log_tool
 logger = logger_utils.setup_logger(__name__)
 
 
-class MCPTransport(StrEnum):
+try:
+    _StrEnumBase = enum.StrEnum
+except AttributeError:
+    # Python < 3.11 compatibility
+    _StrEnumBase = str
+
+
+class MCPTransport(_StrEnumBase, enum.Enum):
     """Transport types for MCP connections."""
 
     HTTP = "http"
