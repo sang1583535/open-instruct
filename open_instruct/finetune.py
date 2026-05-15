@@ -255,6 +255,9 @@ class FlatArguments:
         metadata={"help": "If set, overrides the number of training steps. Otherwise, num_train_epochs is used."},
     )
     seed: int = field(default=42, metadata={"help": "Random seed for initialization and dataset shuffling."})
+    shuffle_dataset: bool = field(
+        default=True, metadata={"help": "Whether to shuffle the training dataset."}
+    )
     checkpointing_steps: str | None = field(
         default=None,
         metadata={
@@ -484,7 +487,8 @@ def main(args: FlatArguments, tc: TokenizerConfig):
             dataset_local_cache_dir=args.dataset_local_cache_dir,
             dataset_skip_cache=args.dataset_skip_cache,
         )
-        train_dataset = train_dataset.shuffle(seed=args.seed)
+        if args.shuffle_dataset:
+            train_dataset = train_dataset.shuffle(seed=args.seed)
         train_dataset.set_format(type="pt")
     if accelerator.is_main_process:
         visualize_token(train_dataset[0][INPUT_IDS_KEY], tokenizer)
@@ -609,7 +613,7 @@ def main(args: FlatArguments, tc: TokenizerConfig):
 
     accelerator.print("Creating dataloader")
     train_dataloader = DataLoader(
-        train_dataset, shuffle=True, collate_fn=collate_fn, batch_size=args.per_device_train_batch_size
+        train_dataset, shuffle=args.shuffle_dataset, collate_fn=collate_fn, batch_size=args.per_device_train_batch_size
     )
 
     # Optimizer
